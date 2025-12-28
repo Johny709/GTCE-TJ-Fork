@@ -831,9 +831,8 @@ public class GTUtility {
         int count = 0;
         for (int i = 0; i < itemHandler.getSlots(); i++) {
             ItemStack slotStack = itemHandler.getStackInSlot(i);
-            if (!slotStack.isEmpty() && ingredient.apply(slotStack)) {
-                int extracted = Math.min(slotStack.getCount(), amount);
-                itemHandler.extractItem(i, extracted, simulate);
+            if (ingredient.apply(slotStack)) {
+                int extracted = itemHandler.extractItem(i, amount, simulate).getCount();
                 count += extracted;
                 amount -= extracted;
                 if (amount < 1)
@@ -844,23 +843,10 @@ public class GTUtility {
     }
 
     public static IItemHandlerModifiable createItemHandlerFromList(List<ItemStack> itemStacks) {
-        return new ItemStackHandler(itemStacks.size()) {
-            @Override
-            public @NotNull ItemStack getStackInSlot(int slot) {
-                return itemStacks.get(slot);
-            }
-
-            @Override
-            public void setStackInSlot(int slot, @NotNull ItemStack stack) {
-                itemStacks.set(slot, stack);
-            }
-
-            @Override
-            public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-                ItemStack stack = simulate ? itemStacks.get(slot).copy() : itemStacks.get(slot);
-                stack.shrink(amount);
-                return stack;
-            }
-        };
+        ItemStackHandler handler = new ItemStackHandler(itemStacks.size());
+        for (int i = 0; i < handler.getSlots(); i++) {
+            handler.setStackInSlot(i, itemStacks.get(i));
+        }
+        return handler;
     }
 }
