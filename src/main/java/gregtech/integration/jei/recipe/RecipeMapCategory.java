@@ -10,6 +10,7 @@ import gregtech.api.gui.widgets.SlotWidget;
 import gregtech.api.gui.widgets.TankWidget;
 import gregtech.api.recipes.RecipeMap;
 import gregtech.integration.jei.utils.render.FluidStackTextRenderer;
+import gregtech.integration.jei.utils.render.ItemStackTextRenderer;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
 import mezz.jei.api.gui.IGuiFluidStackGroup;
@@ -85,14 +86,12 @@ public class RecipeMapCategory implements IRecipeCategory<GTRecipeWrapper> {
                 SlotItemHandler handle = (SlotItemHandler) slotWidget.getHandle();
                 if (handle.getItemHandler() == importItems) {
                     //this is input item stack slot widget, so add it to item group
-                    itemStackGroup.init(handle.getSlotIndex(), true,
-                        slotWidget.getPosition().x,
-                        slotWidget.getPosition().y);
+                    itemStackGroup.init(handle.getSlotIndex(), true, new ItemStackTextRenderer(),
+                        slotWidget.getPosition().x, slotWidget.getPosition().y, slotWidget.getSize().getWidth(), slotWidget.getSize().getHeight(), 0, 0);
                 } else if (handle.getItemHandler() == exportItems) {
                     //this is output item stack slot widget, so add it to item group
-                    itemStackGroup.init(importItems.getSlots() + handle.getSlotIndex(), false,
-                        slotWidget.getPosition().x,
-                        slotWidget.getPosition().y);
+                    itemStackGroup.init(importItems.getSlots() + handle.getSlotIndex(), false, new ItemStackTextRenderer(),
+                        slotWidget.getPosition().x, slotWidget.getPosition().y, slotWidget.getSize().getWidth(), slotWidget.getSize().getHeight(), 0, 0);
                 }
             } else if (uiWidget instanceof TankWidget) {
                 TankWidget tankWidget = (TankWidget) uiWidget;
