@@ -7,7 +7,10 @@
             "gregtech:blocks/casings/coils/machine_coil_naquadah_active_ctm"
         ],
         "extra": {
-            "connect_inside": true
+            "connect_inside": true,
+            "light": {
+                "block": 15
+            }
         }
     }
 }
