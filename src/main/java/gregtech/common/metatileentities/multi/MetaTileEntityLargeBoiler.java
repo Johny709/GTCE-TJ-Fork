@@ -398,7 +398,7 @@ public class MetaTileEntityLargeBoiler extends MultiblockWithDisplayBase impleme
     public void receiveInitialSyncData(PacketBuffer buf) {
         super.receiveInitialSyncData(buf);
         this.isActive = buf.readBoolean();
-        this.readActiveBlockPacket(buf);
+        this.readActiveBlockPacket(buf, this.isActive);
     }
 
     @Override
@@ -406,7 +406,7 @@ public class MetaTileEntityLargeBoiler extends MultiblockWithDisplayBase impleme
         super.receiveCustomData(dataId, buf);
         if (dataId == 100) {
             this.isActive = buf.readBoolean();
-            this.readActiveBlockPacket(buf);
+            this.readActiveBlockPacket(buf, this.isActive);
         }
     }
 
@@ -417,13 +417,13 @@ public class MetaTileEntityLargeBoiler extends MultiblockWithDisplayBase impleme
         }
     }
 
-    private void readActiveBlockPacket(PacketBuffer buffer) {
+    private void readActiveBlockPacket(PacketBuffer buffer, boolean isActive) {
         int size = buffer.readInt();
         for (int i = 0; i < size; i++) {
             BlockPos pos = buffer.readBlockPos();
             IBlockState state = this.getWorld().getBlockState(pos);
             if (state.getBlock() instanceof BlockFireboxCasing) {
-                state = state.withProperty(BlockFireboxCasing.ACTIVE, this.isActive);
+                state = state.withProperty(BlockFireboxCasing.ACTIVE, isActive);
                 this.getWorld().setBlockState(pos, state, 8);
             }
         }
