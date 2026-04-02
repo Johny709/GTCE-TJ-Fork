@@ -957,8 +957,12 @@ public class GTUtility {
     }
 
     public static byte getOCTierByVoltage(long voltage) {
-        return (byte) Math.min(GTValues.MAX_TRUE, nearestLesser(VOC, voltage) + 1);
+        if (voltage <= GTValues.V[GTValues.ULV]) {
+            return GTValues.ULV;
+        }
+        return (byte) ((62 - Long.numberOfLeadingZeros(voltage - 1)) >> 1);
     }
+
 
     /**
      * Ex: This method turns both 1024 and 512 into HV.
