@@ -957,11 +957,14 @@ public class GTUtility {
     }
 
     public static byte getOCTierByVoltage(long voltage) {
-        if (voltage <= GTValues.V[GTValues.ULV]) {
-            return GTValues.ULV;
+        long eut = 8;
+        for (byte i = 0; eut > 0; i++) {
+            if ((eut *= 4) > voltage)
+                return i;
         }
-        return (byte) ((62 - Long.numberOfLeadingZeros(voltage - 1)) >> 1);
+        return 0;
     }
+
 
 
     /**
