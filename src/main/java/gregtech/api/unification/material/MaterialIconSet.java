@@ -52,7 +52,8 @@ public enum MaterialIconSet {
     SOULARIUM,
     HARA,
     HARASTEEL,
-    SINSES;
+    SINSES,
+    COSMIC_NEUTRONIUM;
 
 
     @ZenGetter("name")
