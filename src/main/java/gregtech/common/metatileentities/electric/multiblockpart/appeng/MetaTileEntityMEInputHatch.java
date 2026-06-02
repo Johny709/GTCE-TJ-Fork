@@ -51,6 +51,7 @@ public class MetaTileEntityMEInputHatch extends MetaTileEntityAEHostablePart<IAE
     public final static String WORKING_TAG = "WorkingEnabled";
     protected final int configSlots;
     protected ExportOnlyAEFluidList aeFluidHandler;
+    protected int tickRate = 1;
 
     public MetaTileEntityMEInputHatch(ResourceLocation metaTileEntityId, int configSlots) {
         this(metaTileEntityId, GTValues.EV, configSlots);
@@ -147,7 +148,7 @@ public class MetaTileEntityMEInputHatch extends MetaTileEntityAEHostablePart<IAE
 
     protected ModularUI.Builder createUITemplate(EntityPlayer player) {
         ModularUI.Builder builder = ModularUI
-                .builder(GuiTextures.BACKGROUND, 176, 18 + 18 * 4 + 94)
+                .builder(GuiTextures.BORDERED_BACKGROUND, 176, 38 + 18 * 4 + 94)
                 .label(10, 5, getMetaFullName());
         // ME Network status
         builder.dynamicLabel(10, 15, () -> this.isOnline ?
@@ -158,12 +159,12 @@ public class MetaTileEntityMEInputHatch extends MetaTileEntityAEHostablePart<IAE
         builder.widget(new ToggleButtonWidget(151, 5, 17, 17, GuiTextures.BUTTON_GT_LOGO, this::isWorkingEnabled, this::setWorkingEnabled));
 
         // Config slots
-        builder.widget(new AEFluidConfigWidget(7, 25, this.getAEFluidHandler()));
+        builder.widget(new AEFluidConfigWidget(7, 45, this.getAEFluidHandler()));
 
         // Arrow image
-        builder.image(7 + 18 * 4, 25 + 18, 18, 18, GuiTextures.ARROW_DOUBLE);
+        builder.image(7 + 18 * 4, 45 + 18, 18, 18, GuiTextures.ARROW_DOUBLE);
 
-        builder.bindPlayerInventory(player.inventory, GuiTextures.SLOT, 7, 18 + 18 * 4 + 12);
+        builder.bindPlayerInventory(player.inventory, GuiTextures.SLOT, 7, 38 + 18 * 4 + 12);
         return builder;
     }
 
@@ -205,6 +206,7 @@ public class MetaTileEntityMEInputHatch extends MetaTileEntityAEHostablePart<IAE
             tanks.appendTag(tankTag);
         }
         data.setTag(FLUID_BUFFER_TAG, tanks);
+        data.setInteger("tickRate", this.tickRate);
         return data;
     }
 
@@ -222,6 +224,8 @@ public class MetaTileEntityMEInputHatch extends MetaTileEntityAEHostablePart<IAE
                 tank.deserializeNBT(tankTag.getCompoundTag("tank"));
             }
         }
+        if (data.hasKey("tickRate"))
+            this.tickRate = Math.max(1, data.getInteger("tickRate"));
     }
 
     @Override

@@ -59,6 +59,7 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
     protected ItemStackHandler circuitInventory;
     protected ItemStackHandler extraSlotInventory;
     private ItemHandlerList actualImportItems;
+    protected int tickRate = 1;
 
     public MetaTileEntityMEInputBus(ResourceLocation metaTileEntityId, int configSlots) {
         this(metaTileEntityId, GTValues.EV, configSlots);
@@ -168,7 +169,7 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
 
     protected ModularUI.Builder createUITemplate(EntityPlayer player) {
         ModularUI.Builder builder = ModularUI
-                .builder(GuiTextures.BACKGROUND, 176, 18 + 18 * 4 + 94)
+                .builder(GuiTextures.BORDERED_BACKGROUND, 176, 38 + 18 * 4 + 94)
                 .label(10, 5, getMetaFullName());
         // ME Network status
         builder.dynamicLabel(10, 15, () -> this.isOnline ?
@@ -178,19 +179,19 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
 
         builder.widget(new ToggleButtonWidget(151, 5, 18, 18, GuiTextures.BUTTON_GT_LOGO, this::isWorkingEnabled, this::setWorkingEnabled));
         // Ghost circuit slot
-        builder.widget(new GhostCircuitWidget(this.circuitInventory, 7 + 18 * 4, 25 + 18 * 3));
+        builder.widget(new GhostCircuitWidget(this.circuitInventory, 7 + 18 * 4, 45 + 18 * 3));
 
         // Config slots
-        builder.widget(new AEItemConfigWidget(7, 25, this.getAEItemHandler()));
+        builder.widget(new AEItemConfigWidget(7, 45, this.getAEItemHandler()));
 
         // Extra slot
-        builder.widget(new SlotWidget(extraSlotInventory, 0, 7 + 18 * 4, 25 + 18 * 2)
+        builder.widget(new SlotWidget(extraSlotInventory, 0, 7 + 18 * 4, 45 + 18 * 2)
                 .setBackgroundTexture(GuiTextures.SLOT));
 
         // Arrow image
-        builder.image(7 + 18 * 4, 25 + 18, 18, 18, GuiTextures.ARROW_DOUBLE);
+        builder.image(7 + 18 * 4, 45 + 18, 18, 18, GuiTextures.ARROW_DOUBLE);
 
-        builder.bindPlayerInventory(player.inventory, GuiTextures.SLOT, 7, 18 + 18 * 4 + 12);
+        builder.bindPlayerInventory(player.inventory, GuiTextures.SLOT, 7, 38 + 18 * 4 + 12);
         return builder;
     }
 
@@ -233,6 +234,7 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
         }
         data.setTag(ITEM_BUFFER_TAG, slots);
         data.setTag("GhostCircuit", this.circuitInventory.serializeNBT());
+        data.setInteger("tickRate", this.tickRate);
         GTUtility.writeItems(this.extraSlotInventory, "ExtraInventory", data);
         return data;
     }
@@ -253,6 +255,8 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
         }
         GTUtility.readItems(this.extraSlotInventory, "ExtraInventory", data);
         this.importItems = createImportItemHandler();
+        if (data.hasKey("tickRate"))
+            this.tickRate = Math.max(1, data.getInteger("tickRate"));
         if (data.hasKey("GhostCircuit"))
             this.circuitInventory.deserializeNBT(data.getCompoundTag("GhostCircuit"));
     }
