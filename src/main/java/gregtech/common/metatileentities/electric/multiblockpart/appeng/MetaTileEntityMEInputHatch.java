@@ -49,33 +49,31 @@ public class MetaTileEntityMEInputHatch extends MetaTileEntityAEHostablePart<IAE
 
     public final static String FLUID_BUFFER_TAG = "FluidTanks";
     public final static String WORKING_TAG = "WorkingEnabled";
-    private final static int CONFIG_SIZE = 16;
+    protected final int configSlots;
     protected ExportOnlyAEFluidList aeFluidHandler;
 
-    public MetaTileEntityMEInputHatch(ResourceLocation metaTileEntityId) {
-        this(metaTileEntityId, GTValues.EV);
+    public MetaTileEntityMEInputHatch(ResourceLocation metaTileEntityId, int configSlots) {
+        this(metaTileEntityId, GTValues.EV, configSlots);
     }
 
-    protected MetaTileEntityMEInputHatch(ResourceLocation metaTileEntityId, int tier) {
+    protected MetaTileEntityMEInputHatch(ResourceLocation metaTileEntityId, int tier, int configSlots) {
         super(metaTileEntityId, tier, IFluidStorageChannel.class);
+        this.configSlots = configSlots;
+        this.aeFluidHandler = null; // re-initialize
+        this.getAEFluidHandler();
+        this.initializeInventory();
     }
 
     protected ExportOnlyAEFluidList getAEFluidHandler() {
-        if (aeFluidHandler == null) {
-            aeFluidHandler = new ExportOnlyAEFluidList(this, CONFIG_SIZE, this.getController());
+        if (this.aeFluidHandler == null) {
+            this.aeFluidHandler = new ExportOnlyAEFluidList(this, this.configSlots, this.getController());
         }
-        return aeFluidHandler;
-    }
-
-    @Override
-    protected void initializeInventory() {
-        getAEFluidHandler(); // initialize it
-        super.initializeInventory();
+        return this.aeFluidHandler;
     }
 
     @Override
     public MetaTileEntity createMetaTileEntity(MetaTileEntityHolder holder) {
-        return new MetaTileEntityMEInputHatch(metaTileEntityId);
+        return new MetaTileEntityMEInputHatch(this.metaTileEntityId, this.getTier(), this.configSlots);
     }
 
     @Override
@@ -199,7 +197,7 @@ public class MetaTileEntityMEInputHatch extends MetaTileEntityAEHostablePart<IAE
         super.writeToNBT(data);
         data.setBoolean(WORKING_TAG, this.workingEnabled);
         NBTTagList tanks = new NBTTagList();
-        for (int i = 0; i < CONFIG_SIZE; i++) {
+        for (int i = 0; i < this.configSlots; i++) {
             ExportOnlyAEFluidSlot tank = this.getAEFluidHandler().getInventory()[i];
             NBTTagCompound tankTag = new NBTTagCompound();
             tankTag.setInteger("slot", i);
@@ -240,7 +238,7 @@ public class MetaTileEntityMEInputHatch extends MetaTileEntityAEHostablePart<IAE
         super.addInformation(stack, player, tooltip, advanced);
         tooltip.add(I18n.format("gregtech.machine.fluid_hatch.import.tooltip"));
         tooltip.add(I18n.format("gregtech.machine.me.fluid_import.tooltip"));
-        tooltip.add(I18n.format("gregtech.machine.me_import_fluid_hatch.configs.tooltip"));
+        tooltip.add(I18n.format("gregtech.machine.me_import_fluid_hatch.configs.tooltip", this.configSlots));
         tooltip.add(I18n.format("gregtech.machine.me.copy_paste.tooltip"));
         tooltip.add(I18n.format("gregtech.machine.me.extra_connections.tooltip"));
         tooltip.add(I18n.format("gregtech.universal.enabled"));
@@ -281,7 +279,7 @@ public class MetaTileEntityMEInputHatch extends MetaTileEntityAEHostablePart<IAE
         NBTTagCompound tag = new NBTTagCompound();
         NBTTagCompound configStacks = new NBTTagCompound();
         tag.setTag("ConfigStacks", configStacks);
-        for (int i = 0; i < CONFIG_SIZE; i++) {
+        for (int i = 0; i < this.configSlots; i++) {
             var slot = this.aeFluidHandler.getInventory()[i];
             IAEFluidStack config = slot.getConfig();
             if (config == null) {
@@ -307,7 +305,7 @@ public class MetaTileEntityMEInputHatch extends MetaTileEntityAEHostablePart<IAE
     protected void readConfigFromTag(NBTTagCompound tag) {
         if (tag.hasKey("ConfigStacks")) {
             NBTTagCompound configStacks = tag.getCompoundTag("ConfigStacks");
-            for (int i = 0; i < CONFIG_SIZE; i++) {
+            for (int i = 0; i < this.configSlots; i++) {
                 String key = Integer.toString(i);
                 if (configStacks.hasKey(key)) {
                     NBTTagCompound configTag = configStacks.getCompoundTag(key);

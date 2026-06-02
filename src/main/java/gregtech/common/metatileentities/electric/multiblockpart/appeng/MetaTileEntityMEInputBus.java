@@ -54,31 +54,34 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
 
     public final static String ITEM_BUFFER_TAG = "ItemSlots";
     public final static String WORKING_TAG = "WorkingEnabled";
-    private final static int CONFIG_SIZE = 16;
+    protected final int configSlots;
     protected ExportOnlyAEItemList aeItemHandler;
     protected ItemStackHandler circuitInventory;
     protected ItemStackHandler extraSlotInventory;
     private ItemHandlerList actualImportItems;
 
-    public MetaTileEntityMEInputBus(ResourceLocation metaTileEntityId) {
-        this(metaTileEntityId, GTValues.EV);
+    public MetaTileEntityMEInputBus(ResourceLocation metaTileEntityId, int configSlots) {
+        this(metaTileEntityId, GTValues.EV, configSlots);
     }
 
-    protected MetaTileEntityMEInputBus(ResourceLocation metaTileEntityId, int tier) {
+    protected MetaTileEntityMEInputBus(ResourceLocation metaTileEntityId, int tier, int configSlots) {
         super(metaTileEntityId, tier, IItemStorageChannel.class);
+        this.configSlots = configSlots;
+        this.aeItemHandler = null; // re-initialize
+        this.initializeInventory();
     }
 
     protected ExportOnlyAEItemList getAEItemHandler() {
-        if (aeItemHandler == null) {
-            aeItemHandler = new ExportOnlyAEItemList(this, CONFIG_SIZE, this.getController());
+        if (this.aeItemHandler == null) {
+            this.aeItemHandler = new ExportOnlyAEItemList(this, this.configSlots, this.getController());
         }
-        return aeItemHandler;
+        return this.aeItemHandler;
     }
 
     @Override
     protected void initializeInventory() {
         super.initializeInventory();
-        this.aeItemHandler = getAEItemHandler();
+        this.aeItemHandler = this.getAEItemHandler();
         this.circuitInventory = new ItemStackHandler(1);
         this.extraSlotInventory = new ItemStackHandler(1);
         this.actualImportItems = new ItemHandlerList(Arrays.asList(this.aeItemHandler, this.circuitInventory, this.extraSlotInventory));
@@ -87,7 +90,7 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
 
     @Override
     public MetaTileEntity createMetaTileEntity(MetaTileEntityHolder holder) {
-        return new MetaTileEntityMEInputBus(metaTileEntityId);
+        return new MetaTileEntityMEInputBus(this.metaTileEntityId, this.getTier(), this.configSlots);
     }
 
     @Override
@@ -174,11 +177,11 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
                 0x404040);
 
         builder.widget(new ToggleButtonWidget(151, 5, 18, 18, GuiTextures.BUTTON_GT_LOGO, this::isWorkingEnabled, this::setWorkingEnabled));
-        // Config slots
-        builder.widget(new AEItemConfigWidget(7, 25, this.getAEItemHandler()));
-
         // Ghost circuit slot
         builder.widget(new GhostCircuitWidget(this.circuitInventory, 7 + 18 * 4, 25 + 18 * 3));
+
+        // Config slots
+        builder.widget(new AEItemConfigWidget(7, 25, this.getAEItemHandler()));
 
         // Extra slot
         builder.widget(new SlotWidget(extraSlotInventory, 0, 7 + 18 * 4, 25 + 18 * 2)
@@ -207,7 +210,7 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
     @Override
     public void writeInitialSyncData(PacketBuffer buf) {
         super.writeInitialSyncData(buf);
-        buf.writeBoolean(workingEnabled);
+        buf.writeBoolean(this.workingEnabled);
     }
 
     @Override
@@ -221,7 +224,7 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
         super.writeToNBT(data);
         data.setBoolean(WORKING_TAG, this.workingEnabled);
         NBTTagList slots = new NBTTagList();
-        for (int i = 0; i < CONFIG_SIZE; i++) {
+        for (int i = 0; i < this.configSlots; i++) {
             ExportOnlyAEItemSlot slot = this.getAEItemHandler().getInventory()[i];
             NBTTagCompound slotTag = new NBTTagCompound();
             slotTag.setInteger("slot", i);
@@ -268,7 +271,7 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
         super.addInformation(stack, player, tooltip, advanced);
         tooltip.add(I18n.format("gregtech.machine.item_bus.import.tooltip"));
         tooltip.add(I18n.format("gregtech.machine.me.item_import.tooltip"));
-        tooltip.add(I18n.format("gregtech.machine.me_import_item_hatch.configs.tooltip"));
+        tooltip.add(I18n.format("gregtech.machine.me_import_item_hatch.configs.tooltip", this.configSlots));
         tooltip.add(I18n.format("gregtech.machine.me.copy_paste.tooltip"));
         tooltip.add(I18n.format("gregtech.machine.me.extra_connections.tooltip"));
         tooltip.add(I18n.format("gregtech.universal.enabled"));
@@ -309,7 +312,7 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
         NBTTagCompound tag = new NBTTagCompound();
         NBTTagCompound configStacks = new NBTTagCompound();
         tag.setTag("ConfigStacks", configStacks);
-        for (int i = 0; i < CONFIG_SIZE; i++) {
+        for (int i = 0; i < this.configSlots; i++) {
             var slot = this.aeItemHandler.getInventory()[i];
             IAEItemStack config = slot.getConfig();
             if (config == null) {
@@ -336,7 +339,7 @@ public class MetaTileEntityMEInputBus extends MetaTileEntityAEHostablePart<IAEIt
     protected void readConfigFromTag(NBTTagCompound tag) {
         if (tag.hasKey("ConfigStacks")) {
             NBTTagCompound configStacks = tag.getCompoundTag("ConfigStacks");
-            for (int i = 0; i < CONFIG_SIZE; i++) {
+            for (int i = 0; i < this.configSlots; i++) {
                 String key = Integer.toString(i);
                 if (configStacks.hasKey(key)) {
                     NBTTagCompound configTag = configStacks.getCompoundTag(key);

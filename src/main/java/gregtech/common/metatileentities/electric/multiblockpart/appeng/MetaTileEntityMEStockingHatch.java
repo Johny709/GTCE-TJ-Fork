@@ -37,24 +37,23 @@ import static gregtech.api.capability.GregtechDataCodes.UPDATE_AUTO_PULL;
 
 public class MetaTileEntityMEStockingHatch extends MetaTileEntityMEInputHatch {
 
-    private static final int CONFIG_SIZE = 16;
     private boolean autoPull;
     private Predicate<FluidStack> autoPullTest;
 
-    public MetaTileEntityMEStockingHatch(ResourceLocation metaTileEntityId) {
-        super(metaTileEntityId, GTValues.IV);
+    public MetaTileEntityMEStockingHatch(ResourceLocation metaTileEntityId, int configSlots) {
+        super(metaTileEntityId, configSlots >= 64 ? GTValues.LuV : GTValues.IV, configSlots);
         this.autoPullTest = $ -> false;
     }
 
     @Override
     public MetaTileEntity createMetaTileEntity(MetaTileEntityHolder holder) {
-        return new MetaTileEntityMEStockingHatch(metaTileEntityId);
+        return new MetaTileEntityMEStockingHatch(this.metaTileEntityId, this.configSlots);
     }
 
     @Override
     protected ExportOnlyAEStockingFluidList getAEFluidHandler() {
         if (this.aeFluidHandler == null) {
-            this.aeFluidHandler = new ExportOnlyAEStockingFluidList(this, CONFIG_SIZE, getController());
+            this.aeFluidHandler = new ExportOnlyAEStockingFluidList(this, this.configSlots, getController());
         }
         return (ExportOnlyAEStockingFluidList) this.aeFluidHandler;
     }
@@ -73,7 +72,7 @@ public class MetaTileEntityMEStockingHatch extends MetaTileEntityMEInputHatch {
                 if (autoPull) {
                     this.getAEFluidHandler().clearConfig();
                 } else {
-                    for (int i = 0; i < CONFIG_SIZE; i++) {
+                    for (int i = 0; i < this.configSlots; i++) {
                         getAEFluidHandler().getInventory()[i].setStack(null);
                     }
                 }
@@ -184,7 +183,7 @@ public class MetaTileEntityMEStockingHatch extends MetaTileEntityMEInputHatch {
 
         int index = 0;
         for (IAEFluidStack stack : storageList) {
-            if (index >= CONFIG_SIZE) break;
+            if (index >= this.configSlots) break;
             if (stack.getStackSize() == 0) continue;
             stack = monitor.extractItems(stack, Actionable.SIMULATE, getActionSource());
             if (stack == null || stack.getStackSize() == 0) continue;
@@ -204,7 +203,7 @@ public class MetaTileEntityMEStockingHatch extends MetaTileEntityMEInputHatch {
     }
 
     private void clearInventory(int startIndex) {
-        for (int i = startIndex; i < CONFIG_SIZE; i++) {
+        for (int i = startIndex; i < this.configSlots; i++) {
             var slot = this.getAEFluidHandler().getInventory()[i];
             slot.setConfig(null);
             slot.setStack(null);
@@ -273,9 +272,9 @@ public class MetaTileEntityMEStockingHatch extends MetaTileEntityMEInputHatch {
                                boolean advanced) {
         tooltip.add(I18n.format("gregtech.machine.fluid_hatch.import.tooltip"));
         tooltip.add(I18n.format("gregtech.machine.me.stocking_fluid.tooltip"));
-        tooltip.add(I18n.format("gregtech.machine.me_import_fluid_hatch.configs.tooltip"));
+        tooltip.add(I18n.format("gregtech.machine.me_import_fluid_hatch.configs.tooltip", this.configSlots));
         tooltip.add(I18n.format("gregtech.machine.me.copy_paste.tooltip"));
-        tooltip.add(I18n.format("gregtech.machine.me.stocking_fluid.tooltip.2"));
+        tooltip.add(I18n.format("gregtech.machine.me.stocking_fluid.tooltip.2", this.configSlots));
         tooltip.add(I18n.format("gregtech.machine.me.extra_connections.tooltip"));
         tooltip.add(I18n.format("gregtech.universal.enabled"));
     }
