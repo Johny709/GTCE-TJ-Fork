@@ -10,6 +10,11 @@ import net.minecraftforge.fluids.FluidTank;
 
 import java.util.List;
 
+/**
+ * Use {@link NotifiableFluidTank} to notify {@link MetaTileEntity} that fluid tank inventory has changed.
+ * Only should notify if fluid amounts have changed since last insertion or extraction.
+ * This can be used to trigger recipe search only when necessary.
+ */
 public class NotifiableFluidTank extends FluidTank implements IInventoryNotifiable {
 
     protected final List<MetaTileEntity> metaTileEntitiesToNotify = new ObjectArrayList<>();
