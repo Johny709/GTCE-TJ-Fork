@@ -71,7 +71,7 @@ public class WireRecipeHandler {
         RecipeMaps.WIREMILL_RECIPES.recipeBuilder()
                 .input(OrePrefix.ingot, material)
                 .outputs(OreDictUnifier.get(OrePrefix.wireGtSingle, material, 2))
-                .notConsumable(IntCircuitIngredient.getIntegratedCircuit((1)))
+                .notConsumable(new IntCircuitIngredient((1)))
                 .duration((int) material.getAverageMass())
                 .EUt(getTieredVoltageMultiplier(material))
                 .buildAndRegister();
@@ -80,7 +80,7 @@ public class WireRecipeHandler {
             final int multiplier = (int) (wireSize.getMaterialAmount(material) / GTValues.M);
             WIREMILL_RECIPES.recipeBuilder()
                     .input(OrePrefix.ingot, material, multiplier)
-                    .notConsumable(IntCircuitIngredient.getIntegratedCircuit((multiplier * 2)))
+                    .notConsumable(new IntCircuitIngredient((multiplier * 2)))
                     .output(wireSize, material)
                     .duration((int) (material.getMass() * multiplier))
                     .EUt(getTieredVoltageMultiplier(material))
